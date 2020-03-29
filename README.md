@@ -42,3 +42,16 @@ Note replace <ip_address_from_step_3> with the IP address you grabbed from step 
 5. now visit `http://simple-helm-chart.local` on your local browser
 
 this should display a hello world html page
+
+
+EKS
+
+1. terraform apply
+
+2. aws eks update-kubeconfig --name simple-helm-chart
+
+3. terraform output config_map_aws_auth > config_map_aws_auth.yaml
+
+4. kubectl apply -f config_map_aws_auth.yaml
+
+5. kubectl get nodes --watch

@@ -1,5 +1,5 @@
-resource "aws_iam_role" "shc_iam_role" {
-  name = "terraform-eks-shc-cluster-role"
+resource "aws_iam_role" "cluster" {
+  name = "${var.cluster_name}-eks-cluster-role"
 
   assume_role_policy = <<POLICY
 {
@@ -17,25 +17,18 @@ resource "aws_iam_role" "shc_iam_role" {
 POLICY
 }
 
-resource "aws_iam_role_policy_attachment" "shc_eks_cluster_policy" {
+resource "aws_iam_role_policy_attachment" "cluster-AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = "${aws_iam_role.shc_iam_role.name}"
+  role       = aws_iam_role.cluster.name
 }
 
-resource "aws_iam_role_policy_attachment" "shc_eks_service_policy" {
+resource "aws_iam_role_policy_attachment" "cluster-AmazonEKSServicePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-  role       = "${aws_iam_role.shc_iam_role.name}"
+  role       = aws_iam_role.cluster.name
 }
 
-
-resource "aws_iam_instance_profile" "shc_iam_instance_profile_node" {
-  name = "terraform-eks-shc-instance-profile"
-  role = "${aws_iam_role.shc_iam_role_node.name}"
-}
-
-
-resource "aws_iam_role" "shc_iam_role_node" {
-  name = "terraform-eks-shc-node-role"
+resource "aws_iam_role" "node" {
+  name = "${var.cluster_name}-eks-node-role"
 
   assume_role_policy = <<POLICY
 {
@@ -44,22 +37,31 @@ resource "aws_iam_role" "shc_iam_role_node" {
     {
       "Effect": "Allow",
       "Principal": {
-        "Service": "eks.amazonaws.com"
+        "Service": "ec2.amazonaws.com"
       },
       "Action": "sts:AssumeRole"
     }
   ]
 }
 POLICY
-
 }
 
-resource "aws_iam_role_policy_attachment" "shc_eks_node_cluster_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.shc_iam_role_node.name
+resource "aws_iam_role_policy_attachment" "node-AmazonEKSWorkerNodePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.node.name
 }
 
-resource "aws_iam_role_policy_attachment" "shc_eks_node_service_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-  role       = aws_iam_role.shc_iam_role_node.name
+resource "aws_iam_role_policy_attachment" "node-AmazonEKS_CNI_Policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  role       = aws_iam_role.node.name
+}
+
+resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOnly" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = aws_iam_role.node.name
+}
+
+resource "aws_iam_instance_profile" "node" {
+  name = "${var.cluster_name}-eks-node-instance-profile"
+  role = aws_iam_role.node.name
 }
