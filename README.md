@@ -1,5 +1,5 @@
 # simple-helm-chart
-Simple Helm Chart with Hello World html Page
+Simple Helm Chart with Hello World html Page with Terraforming EKS cluster
 
 ## Prerequisites
 * Minikube [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
@@ -46,12 +46,34 @@ this should display a hello world html page
 
 EKS
 
-1. terraform apply
+1. terrform apply from root of repo
+  ```bash
+  cd terraform && terraform apply
+  ```
 
-2. aws eks update-kubeconfig --name simple-helm-chart
+2. update local kubconfig to use eks context
+  ```bash
+  aws eks update-kubeconfig --name simple-helm-chart
+  ```
 
-3. terraform output config_map_aws_auth > config_map_aws_auth.yaml
+3. output config_map_aws_auth to yaml
+  ```bash
+  terraform output config_map_aws_auth > config_map_aws_auth.yaml
+  ```
 
-4. kubectl apply -f config_map_aws_auth.yaml
+4. kubectl apply config_map_aws_auth to eks cluster
+  ```bash
+  kubectl apply -f config_map_aws_auth.yaml
+  ```
 
-5. kubectl get nodes --watch
+5. confirm worker nodes joining cluster
+  ```bash
+  kubectl get nodes --watch
+  ```
+
+## Roadmap
+* Debug Connection issue with EKS worker-nodes joining cluster
+* Terraform IaC for spot instances and k8s config for interuptions
+* K8s files for Rbac
+* K8s config files for namespace
+* Pipeline for Build
