@@ -1,6 +1,6 @@
 resource "aws_launch_configuration" "bastion_launch_conf" {
   name                        = "${var.cluster_name}-bastionasglaunchconfig"
-  image_id                    = "ami-0c41e1db3063a5969"
+  image_id                    = "ami-035966e8adab4aaad"
   instance_type               = "t3.nano"
   security_groups             = [aws_security_group.sg_bastion.id]
   key_name                    = var.ssh_key_pem

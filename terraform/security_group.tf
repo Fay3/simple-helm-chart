@@ -92,7 +92,7 @@ resource "aws_security_group" "sg_node" {
   ingress {
     description = "Allow node to communicate with each other"
     from_port   = 0
-    to_port     = 65535
+    to_port     = 0
     protocol    = "-1"
     cidr_blocks = [var.cidr_block]
   }
