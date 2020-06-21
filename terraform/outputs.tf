@@ -14,10 +14,18 @@ data:
       groups:
         - system:bootstrappers
         - system:nodes
-CONFIGMAPAWSAUTH
 
+CONFIGMAPAWSAUTH
 }
 
 output "config_map_aws_auth" {
   value = local.config_map_aws_auth
+}
+
+output "eks_cluster_endpoint" {
+  value = aws_eks_cluster.shc_eks.endpoint
+}
+
+output "eks_cluster_certificat_authority" {
+  value = aws_eks_cluster.shc_eks.certificate_authority 
 }

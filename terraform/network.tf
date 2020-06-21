@@ -2,7 +2,6 @@
 
 resource "aws_subnet" "shc_public_subnet" {
   count = length(var.public_subnets)
-
   availability_zone = data.aws_availability_zones.available.names[count.index]
   cidr_block        = var.public_subnets[count.index]
   vpc_id            = aws_vpc.shc_vpc.id
@@ -50,7 +49,7 @@ resource "aws_subnet" "shc_private_subnet" {
 }
 
 resource "aws_eip" "shc_elastic_ip" {
-  count = 2
+  count = var.az_count
   vpc   = true
   tags = {
     "Name" = "${var.cluster_name}-eip"
@@ -60,7 +59,7 @@ resource "aws_eip" "shc_elastic_ip" {
 resource "aws_nat_gateway" "shc_nat_gateway" {
   count         = var.az_count
   allocation_id = aws_eip.shc_elastic_ip[count.index].id
-  subnet_id     = aws_subnet.shc_private_subnet[count.index].id
+  subnet_id     = aws_subnet.shc_public_subnet[count.index].id
   tags = {
     "Name" = "${var.cluster_name}-nat-gw"
   }
