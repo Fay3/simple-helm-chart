@@ -1,5 +1,5 @@
 data "http" "my_public_ip" {
-  url = "https://ifconfig.co/json"
+  url = "https://api.ipify.org?format=json"
   request_headers = {
     Accept = "application/json"
   }

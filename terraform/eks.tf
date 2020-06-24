@@ -1,3 +1,7 @@
+data "aws_eks_cluster_auth" "cluster_auth" {
+  name = aws_eks_cluster.shc_eks.id
+}
+
 resource "aws_eks_cluster" "shc_eks" {
   name     = var.cluster_name
   role_arn = aws_iam_role.cluster.arn
@@ -5,6 +9,7 @@ resource "aws_eks_cluster" "shc_eks" {
   vpc_config {
     security_group_ids = [aws_security_group.sg_cluster.id]
     subnet_ids         = flatten([aws_subnet.shc_public_subnet.*.id, aws_subnet.shc_private_subnet.*.id])
+   public_access_cidrs = ["${(local.ifconfig_co_json.ip)}/32"]
   }
 
   tags = {

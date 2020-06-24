@@ -9,6 +9,7 @@ resource "aws_subnet" "shc_public_subnet" {
   tags = {
     "Name"                                      = "${var.cluster_name}-eks-public"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/elb" = "1"
   }
 }
 
@@ -45,6 +46,7 @@ resource "aws_subnet" "shc_private_subnet" {
   tags = {
     "Name"                                      = "${var.cluster_name}-eks-private"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb" = "1"
   }
 }
 

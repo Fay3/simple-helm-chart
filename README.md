@@ -4,6 +4,8 @@ Simple Helm Chart with Hello World html Page with Terraforming EKS cluster
 ## Prerequisites
 * Minikube [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
 * Helm [Helm](https://helm.sh/docs/intro/install/)
+* AWScli [AWScli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+* Terraform [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html)
 
 ensure minikube is running and your current kubeclt context is pointing at your local minikube
 
@@ -43,37 +45,44 @@ Note replace <ip_address_from_step_3> with the IP address you grabbed from step 
 
 this should display a hello world html page
 
-
-EKS
+## Terraform
 
 1. terrform apply from root of repo
   ```bash
   cd terraform && terraform apply
   ```
 
+AWS Infrastructure
+* VPC
+* Internet Gateway
+* 3x NatGateways
+* 3x Elastic IP
+* 6x Route Tables
+* 1x Private subnet zone a
+* 1x Private subnet zone b
+* 1x Private subnet zone c
+* 1x Public subnet zone a
+* 1x Public subnet zone b
+* 1x Public subnet zone c
+* 2x Security Groups
+* 1x Autoscaling group as a bastion
+* 3x IAM roles and policies
+* 1x EKS Cluster
+* 1X EKS Node Group
+
+Kubernetes
+* 1x Namespace
+* 1x alb-ingress-controller
+
+
+## EKS
+
 2. update local kubconfig to use eks context
   ```bash
   aws eks update-kubeconfig --name simple-helm-chart
   ```
 
-3. output config_map_aws_auth to yaml
-  ```bash
-  terraform output config_map_aws_auth > config_map_aws_auth.yaml
-  ```
-
-4. kubectl apply config_map_aws_auth to eks cluster
-  ```bash
-  kubectl apply -f config_map_aws_auth.yaml
-  ```
-
-5. confirm worker nodes joining cluster
-  ```bash
-  kubectl get nodes --watch
-  ```
-
 ## Roadmap
-* Debug Connection issue with EKS worker-nodes joining cluster
-* Terraform IaC for spot instances and k8s config for interuptions
+* Terraform IaC for spot instances and k8s config for autoscaler
 * K8s files for Rbac
-* K8s config files for namespace
 * Pipeline for Build
