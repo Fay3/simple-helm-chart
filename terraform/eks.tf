@@ -9,7 +9,6 @@ resource "aws_eks_cluster" "shc_eks" {
   vpc_config {
     security_group_ids = [aws_security_group.sg_cluster.id]
     subnet_ids         = flatten([aws_subnet.shc_public_subnet.*.id, aws_subnet.shc_private_subnet.*.id])
-   public_access_cidrs = ["${(local.ifconfig_co_json.ip)}/32"]
   }
 
   tags = {
