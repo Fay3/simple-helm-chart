@@ -48,3 +48,13 @@ resource "aws_eks_node_group" "shc_eks_node" {
     "Name"                                      = "${var.cluster_name}-worker-node"
   }
 }
+
+data "tls_certificate" "cluster" {
+  url = aws_eks_cluster.shc_eks.identity.0.oidc.0.issuer
+}
+
+resource "aws_iam_openid_connect_provider" "cluster" {
+  client_id_list = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.cluster.certificates.0.sha1_fingerprint]
+  url = aws_eks_cluster.shc_eks.identity.0.oidc.0.issuer
+}

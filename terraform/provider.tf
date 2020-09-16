@@ -8,3 +8,7 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster_auth.token
   load_config_file       = false
 }
+
+
+provider "tls" {
+}

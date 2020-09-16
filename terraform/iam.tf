@@ -70,6 +70,26 @@ resource "aws_iam_instance_profile" "node" {
   role = aws_iam_role.node.name
 }
 
+data "aws_iam_policy_document" "worker_assume_role" {
+  statement {
+    actions = [
+      "sts:AssumeRole"
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "worker_assume_role" {
+  name   = "${var.cluster_name}-worker-assume-role-policy"
+  policy = data.aws_iam_policy_document.worker_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "worker_assume_role" {
+  policy_arn = aws_iam_policy.worker_assume_role.arn
+  role       = aws_iam_role.node.name
+}
+
 ### ALB Controller 
 
 data "aws_caller_identity" "current" {}
@@ -80,22 +100,20 @@ data "aws_iam_policy_document" "eks_oidc_assume_role" {
     effect  = "Allow"
     condition {
       test     = "StringEquals"
-      variable = "${replace("${var.cluster_name}.identity.oidc.issuer", "https://", "")}:sub"
+      variable = "${replace(aws_eks_cluster.shc_eks.identity.0.oidc.0.issuer, "https://", "")}:sub"
       values = [
         "system:serviceaccount:kube-system:aws-alb-ingress-controller"
       ]
     }
     principals {
-      identifiers = [
-        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace("${var.cluster_name}.identity.oidc.issuer", "https://", "")}"
-      ]
-      type = "Federated"
+      type        = "Federated"
+      identifiers = ["${aws_iam_openid_connect_provider.cluster.arn}"]
     }
   }
 }
 
 resource "aws_iam_role" "alb_controller" {
-  name        = "${var.cluster_name}-alb-ingress-controller-role"
+  name               = "${var.cluster_name}-alb-ingress-controller-role"
   assume_role_policy = data.aws_iam_policy_document.eks_oidc_assume_role.json
 }
 
@@ -238,8 +256,8 @@ data "aws_iam_policy_document" "alb_controller" {
 }
 
 resource "aws_iam_policy" "alb_controller" {
-  name        = "${var.cluster_name}-alb-ingress_controller-policy"
-  policy      = data.aws_iam_policy_document.alb_controller.json
+  name   = "${var.cluster_name}-alb-ingress_controller-policy"
+  policy = data.aws_iam_policy_document.alb_controller.json
 }
 
 resource "aws_iam_role_policy_attachment" "alb_controller" {
