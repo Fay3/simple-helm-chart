@@ -94,12 +94,12 @@ resource "aws_iam_role_policy_attachment" "worker_assume_role" {
 
 data "aws_caller_identity" "current" {}
 
-data "aws_iam_policy_document" "eks_oidc_assume_role" {
+data "aws_iam_policy_document" "oidc_alb_controller" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "${replace(aws_eks_cluster.shc_eks.identity.0.oidc.0.issuer, "https://", "")}:sub"
       values = [
         "system:serviceaccount:kube-system:aws-alb-ingress-controller"
@@ -114,7 +114,7 @@ data "aws_iam_policy_document" "eks_oidc_assume_role" {
 
 resource "aws_iam_role" "alb_controller" {
   name               = "${var.cluster_name}-alb-ingress-controller-role"
-  assume_role_policy = data.aws_iam_policy_document.eks_oidc_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.oidc_alb_controller.json
 }
 
 data "aws_iam_policy_document" "alb_controller" {
@@ -256,11 +256,59 @@ data "aws_iam_policy_document" "alb_controller" {
 }
 
 resource "aws_iam_policy" "alb_controller" {
-  name   = "${var.cluster_name}-alb-ingress_controller-policy"
+  name   = "${var.cluster_name}-alb-ingress-controller-policy"
   policy = data.aws_iam_policy_document.alb_controller.json
 }
 
 resource "aws_iam_role_policy_attachment" "alb_controller" {
   policy_arn = aws_iam_policy.alb_controller.arn
   role       = aws_iam_role.alb_controller.name
+}
+
+data "aws_iam_policy_document" "oidc_external_dns" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+    condition {
+      test     = "StringLike"
+      variable = "${replace(aws_eks_cluster.shc_eks.identity.0.oidc.0.issuer, "https://", "")}:sub"
+      values = [
+        "system:serviceaccount:kube-system:external-dns"
+      ]
+    }
+    principals {
+      type        = "Federated"
+      identifiers = ["${aws_iam_openid_connect_provider.cluster.arn}"]
+    }
+  }
+}
+resource "aws_iam_role" "external_dns" {
+  name               = "${var.cluster_name}-external-dns-role"
+  assume_role_policy = data.aws_iam_policy_document.oidc_external_dns.json
+}
+
+data "aws_iam_policy_document" "external_dns" {
+  statement {
+    actions = [
+      "route53:ChangeResourceRecordSets"
+    ]
+    resources = ["arn:aws:route53:::hostedzone/*"]
+  }
+  statement {
+    actions = [
+      "route53:ListHostedZones",
+      "route53:ListResourceRecordSets"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "external_dns" {
+  name   = "${var.cluster_name}-external-dns-policy"
+  policy = data.aws_iam_policy_document.external_dns.json
+}
+
+resource "aws_iam_role_policy_attachment" "external_dns" {
+  policy_arn = aws_iam_policy.external_dns.arn
+  role       = aws_iam_role.external_dns.name
 }

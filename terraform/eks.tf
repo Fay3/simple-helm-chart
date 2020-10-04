@@ -12,7 +12,7 @@ resource "aws_eks_cluster" "shc_eks" {
   }
 
   tags = {
-    "Name"                                      = "${var.cluster_name}-eks"
+    "Name" = "${var.cluster_name}-eks"
   }
 
   depends_on = [
@@ -26,10 +26,10 @@ resource "aws_eks_node_group" "shc_eks_node" {
   node_group_name = "${var.cluster_name}-nodes"
   node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = aws_subnet.shc_private_subnet.*.id
-  instance_types = ["t3.medium"]
+  instance_types  = ["t3.medium"]
   remote_access {
-    ec2_ssh_key = var.ssh_key_pem
-    source_security_group_ids  = [aws_security_group.sg_bastion.id]
+    ec2_ssh_key               = var.ssh_key_pem
+    source_security_group_ids = [aws_security_group.sg_bastion.id]
   }
 
   scaling_config {
@@ -45,7 +45,7 @@ resource "aws_eks_node_group" "shc_eks_node" {
   ]
 
   tags = {
-    "Name"                                      = "${var.cluster_name}-worker-node"
+    "Name" = "${var.cluster_name}-worker-node"
   }
 }
 
@@ -54,7 +54,7 @@ data "tls_certificate" "cluster" {
 }
 
 resource "aws_iam_openid_connect_provider" "cluster" {
-  client_id_list = ["sts.amazonaws.com"]
+  client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.cluster.certificates.0.sha1_fingerprint]
-  url = aws_eks_cluster.shc_eks.identity.0.oidc.0.issuer
+  url             = aws_eks_cluster.shc_eks.identity.0.oidc.0.issuer
 }
